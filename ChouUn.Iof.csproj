@@ -1,52 +1,88 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net471</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <Description>Several inventory organizing features.</Description>
-    <Version>1.5.1</Version>
+    <Version>1.5.2</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
+    
+    <!-- Local SPT Installation Path -->
+    <GamePath>X:\SPT4 DEV\</GamePath>
+    <ManagedPath>$(GamePath)EscapeFromTarkov_Data\Managed\</ManagedPath>
+    <BepInExPath>$(GamePath)BepInEx\</BepInExPath>
+    
+    <!-- Output Config -->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
 
-	<ItemGroup>
-	<Reference Include="netstandard" />
+  <!-- Auto-deploy after build -->
+  <Target Name="DeployToPlugins" AfterTargets="Build" Condition="Exists('$(GamePath)')">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BepInExPath)plugins\" SkipUnchangedFiles="true" />
+    <Message Text="Deployed $(TargetFileName) to $(BepInExPath)plugins\" Importance="high" />
+  </Target>
+
+  <ItemGroup>
+    <!-- BepInEx Core -->
     <Reference Include="0Harmony">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\dependencies\0Harmony.dll</HintPath>
+      <HintPath>$(BepInExPath)core\0Harmony.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="BepInEx">
-      <HintPath>..\dependencies\BepInEx.dll</HintPath>
+      <HintPath>$(BepInExPath)core\BepInEx.dll</HintPath>
+      <Private>false</Private>
     </Reference>
+
+    <!-- SPT Assemblies -->
     <Reference Include="spt-common">
-      <HintPath>..\dependencies\spt-common.dll</HintPath>
+      <HintPath>$(BepInExPath)plugins\spt\spt-common.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="spt-reflection">
-      <HintPath>..\dependencies\spt-reflection.dll</HintPath>
+      <HintPath>$(BepInExPath)plugins\spt\spt-reflection.dll</HintPath>
+      <Private>false</Private>
     </Reference>
+
+    <!-- Game Assemblies -->
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\dependencies\Assembly-CSharp.dll</HintPath>
+      <HintPath>$(ManagedPath)Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="ItemComponent.Types">
-      <HintPath>..\dependencies\ItemComponent.Types.dll</HintPath>
+      <HintPath>$(ManagedPath)ItemComponent.Types.dll</HintPath>
+      <Private>false</Private>
     </Reference>
+    
+    <!-- Unity -->
     <Reference Include="Unity.TextMeshPro">
-      <HintPath>..\dependencies\Unity.TextMeshPro.dll</HintPath>
+      <HintPath>$(ManagedPath)Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>..\dependencies\UnityEngine.dll</HintPath>
+      <HintPath>$(ManagedPath)UnityEngine.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\dependencies\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(ManagedPath)UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.ImageConversionModule">
-        <HintPath>..\dependencies\UnityEngine.ImageConversionModule.dll</HintPath>
+      <HintPath>$(ManagedPath)UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\dependencies\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(ManagedPath)UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(ManagedPath)UnityEngine.UIModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="Sirenix.Serialization">
-      <HintPath>..\dependencies\Sirenix.Serialization.dll</HintPath>
+      <HintPath>$(ManagedPath)Sirenix.Serialization.dll</HintPath>
+      <Private>false</Private>
     </Reference>
-	</ItemGroup>
+  </ItemGroup>
 
 </Project>
