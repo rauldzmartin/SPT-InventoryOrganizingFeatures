@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Reflection;
 using EFT.UI;
 using HarmonyLib;
@@ -22,13 +23,20 @@ namespace ChouUn.Iof.Patches
             try
             {
                 if (OrganizeSprite != null) return;
-                //OrganizeSprite = AccessTools.Field(____hideoutButton.GetType(), "_iconSprite").GetValue(____hideoutButton) as Sprite;
                 OrganizeSprite = ____hideoutButton.GetFieldValue<Sprite>("_iconSprite");
             }
             catch (Exception ex)
             {
                 throw Plugin.ShowErrorNotif(ex);
             }
+        }
+
+        private static Sprite LoadSprite(string path)
+        {
+            byte[] fileData = File.ReadAllBytes(path);
+            Texture2D texture = new Texture2D(2, 2);
+            texture.LoadImage(fileData);
+            return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
         }
     }
 }

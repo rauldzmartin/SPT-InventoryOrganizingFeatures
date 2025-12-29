@@ -10,39 +10,42 @@
 
 	<ItemGroup>
 	<Reference Include="netstandard" />
-    <Reference Include="0Harmony, Version=2.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="0Harmony">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>Refs\BepInEx\plugins\core\0Harmony.dll</HintPath>
+      <HintPath>..\dependencies\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx">
-      <HintPath>Refs\BepInEx\plugins\core\BepInEx.dll</HintPath>
+      <HintPath>..\dependencies\BepInEx.dll</HintPath>
     </Reference>
     <Reference Include="spt-common">
-      <HintPath>Refs\BepInEx\plugins\spt\spt-common.dll</HintPath>
+      <HintPath>..\dependencies\spt-common.dll</HintPath>
     </Reference>
     <Reference Include="spt-reflection">
-      <HintPath>Refs\BepInEx\plugins\spt\spt-reflection.dll</HintPath>
+      <HintPath>..\dependencies\spt-reflection.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>Refs\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\dependencies\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="ItemComponent.Types">
-      <HintPath>Refs\Managed\ItemComponent.Types.dll</HintPath>
+      <HintPath>..\dependencies\ItemComponent.Types.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro">
-      <HintPath>Refs\Managed\Unity.TextMeshPro.dll</HintPath>
+      <HintPath>..\dependencies\Unity.TextMeshPro.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>Refs\Managed\UnityEngine.dll</HintPath>
+      <HintPath>..\dependencies\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>Refs\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>..\dependencies\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+        <HintPath>..\dependencies\UnityEngine.ImageConversionModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>Refs\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>..\dependencies\UnityEngine.UI.dll</HintPath>
     </Reference>
     <Reference Include="Sirenix.Serialization">
-      <HintPath>Refs\Managed\Sirenix.Serialization.dll</HintPath>
+      <HintPath>..\dependencies\Sirenix.Serialization.dll</HintPath>
     </Reference>
 	</ItemGroup>
 

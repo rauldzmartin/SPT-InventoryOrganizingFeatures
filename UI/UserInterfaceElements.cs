@@ -1,61 +1,51 @@
-﻿using System;
-using System.Linq;
-using ChouUn.Iof.Features;
-using ChouUn.Iof.Reflection;
-using EFT.InventoryLogic;
-using EFT.UI;
+﻿using EFT.UI;
+using System;
 using TMPro;
+using System.Linq;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using ChouUn.Iof.Reflection;
+using ChouUn.Iof.Features;
+using EFT.InventoryLogic;
+using static ChouUn.Iof.Features.Organizer;
 
 namespace ChouUn.Iof.UI
 {
     internal static class UserInterfaceElements
     {
-        private static readonly Color TextColor = new Color(0.75f, 0.75f, 0.75f, 1f);
-        private const float ContainerButtonWidth = 35f;
-        private const float FontSize = 12f;
-        private const string FontName = "BenderBold";
-
         public static Button OrganizeButtonStash { get; set; } = null;
         public static Button OrganizeButtonTrader { get; set; } = null;
         public static Sprite OrganizeSprite { get; set; } = null;
         public static Sprite TakeOutSprite { get; set; } = null;
 
+        // Visual Constants
+        private static readonly Color TextColor = new Color(0.75f, 0.75f, 0.75f, 1f);
+        private const float ContainerButtonWidth = 35f;
+        private const float FontSize = 12f;
+        private const string FontName = "BenderBold";
+
         public static Button SetupOrganizeButton(Button sourceForCloneButton, CompoundItem item, InventoryController controller)
         {
             var clone = CloneAndCleanButton(sourceForCloneButton);
 
-            clone.onClick.AddListener(new UnityAction(() =>
+            clone.onClick.AddListener(new UnityEngine.Events.UnityAction(() =>
             {
                 try
                 {
                     var showMessageWindowArgs = new object[]
                     {
                         "Do you want to organize all items by tagged containers?",
-                        new Action(() =>
-                        {
-                            Organizer.Organize(item, controller);
-                        }),
+                        new Action(() => Organize(item, controller)),
                         new Action(DoNothing),
                     };
-                    var showMessageWindowArgTypes = new Type[]
-                    {
-                        typeof(string),
-                        typeof(Action),
-                        typeof(Action),
-                        typeof(string),
-                        typeof(float),
-                        typeof(bool),
-                        typeof(TextAlignmentOptions),
-                    };
+                    
+                    // Simple reflection invoke for ShowMessageWindow
                     ReflectionHelper.InvokeMethod(
                         ItemUiContext.Instance,
                         "ShowMessageWindow",
                         showMessageWindowArgs,
-                        showMessageWindowArgTypes
+                        new Type[] { typeof(string), typeof(Action), typeof(Action), typeof(string), typeof(float), typeof(bool), typeof(TextAlignmentOptions) }
                     );
                 }
                 catch (Exception ex)
@@ -64,23 +54,35 @@ namespace ChouUn.Iof.UI
                 }
             }));
 
-            // For stash panel - hide image and use text
-            var childImage = clone.transform.Find("Image");
-            if (childImage != null)
+            // Determine if this is the stash panel or container panel based on context or button parent?
+            // The original logic checked for specific children or relied on context. 
+            // However, the cleanest way based on previous code is:
+            // Stash panel has a child named "Image" that we disabled.
+            // Container panel has a child named "SortIcon".
+            // We can try to handle both generically or check specific structure.
+            
+            // Let's look at the structure differences:
+            // Stash: sourceForCloneButton -> Image (Icon)
+            // Container: sourceForCloneButton -> SortIcon
+            
+            if (sourceForCloneButton.transform.Find("Image") != null) 
             {
-                StyleButton(clone.gameObject, "ORG", null);
-                childImage.gameObject.SetActive(false);
+                // Stash Panel Logic
+                StyleButton(clone.gameObject, "ORG", null); // default width (native)
+                
+                // Stash specifically had a check for "Image" to disable it.
+                var childImage = clone.transform.Find("Image");
+                if (childImage != null) childImage.gameObject.SetActive(false);
             }
             else
             {
-                // For container view panel
+                // Container Panel Logic
                 StyleButton(clone.gameObject, "ORG", ContainerButtonWidth);
+
+                // Container specifically had a check for "SortIcon" to disable it.
                 foreach (Transform child in clone.transform)
                 {
-                    if (child.name.Equals("SortIcon"))
-                    {
-                        child.gameObject.SetActive(false);
-                    }
+                    if (child.name.Equals("SortIcon")) child.gameObject.SetActive(false);
                 }
             }
 
@@ -89,31 +91,24 @@ namespace ChouUn.Iof.UI
             return clone;
         }
 
-        private const string DefaultInventoryId = "55d7217a4bdc2d86028b456d";
-
         public static Button SetupTakeOutButton(Button sourceForCloneButton, CompoundItem item, InventoryController controller)
         {
             var clone = CloneAndCleanButton(sourceForCloneButton);
 
-            clone.onClick.AddListener(new UnityAction(() =>
+            clone.onClick.AddListener(new UnityEngine.Events.UnityAction(() =>
             {
                 try
                 {
-                    ItemUiContext.Instance.ShowMessageWindow(
+                     ItemUiContext.Instance.ShowMessageWindow(
                         "Do you want to take out all items from this container?",
                         new Action(() =>
                         {
-                            var parent = item.Parent.Container.ParentItem;
-                            var targetContainer = parent.TemplateId == DefaultInventoryId
-                                ? controller.Inventory.Stash
-                                : (CompoundItem)parent;
-                            new OrganizedContainer(targetContainer, item, controller).Organize(true);
+                             // Check if parent is DefaultInventoryId. It's applicable on items which are equipped on PMC.
+                             var parent = item.Parent.Container.ParentItem;
+                             // Use reverse organizing with ignoreParams = true
+                             new OrganizedContainer(parent.TemplateId == "55d7217a4bdc2d86028b456d" ? controller.Inventory.Stash : (CompoundItem)parent, item, controller).Organize(true);
                         }),
-                        new Action(DoNothing),
-                        null,
-                        0f,
-                        false,
-                        TextAlignmentOptions.Center
+                        new Action(DoNothing)
                     );
                 }
                 catch (Exception ex)
@@ -122,14 +117,12 @@ namespace ChouUn.Iof.UI
                 }
             }));
 
+            // TakeOut button is only used in Container View, so we apply fixed width always.
             StyleButton(clone.gameObject, "OUT", ContainerButtonWidth);
 
-            foreach (Transform child in clone.transform)
+             foreach (Transform child in clone.transform)
             {
-                if (child.name.Equals("SortIcon"))
-                {
-                    child.gameObject.SetActive(false);
-                }
+                if (child.name.Equals("SortIcon")) child.gameObject.SetActive(false);
             }
 
             AddTooltip(clone.gameObject, "Take all items out");
@@ -146,57 +139,47 @@ namespace ChouUn.Iof.UI
 
         private static void StyleButton(GameObject buttonObj, string text, float? forcedWidth)
         {
-            // Set fixed width if specified
+            // Enforce Width if requested
             if (forcedWidth.HasValue)
             {
                 var layoutElement = buttonObj.GetComponent<LayoutElement>();
-                if (layoutElement == null)
-                {
-                    layoutElement = buttonObj.AddComponent<LayoutElement>();
-                }
+                if (layoutElement == null) layoutElement = buttonObj.AddComponent<LayoutElement>();
                 layoutElement.minWidth = forcedWidth.Value;
-                layoutElement.flexibleWidth = 0f;
+                layoutElement.flexibleWidth = 0;
             }
 
-            // Find or create text element
-            var textTransform = buttonObj.transform.Find("Text");
+            // Setup Text
+            var textTrans = buttonObj.transform.Find("Text");
             GameObject textObj;
-            if (textTransform == null)
+            if (textTrans == null)
             {
                 textObj = new GameObject("Text");
                 textObj.transform.SetParent(buttonObj.transform, false);
-                var rectTransform = textObj.AddComponent<RectTransform>();
-                rectTransform.anchorMin = Vector2.zero;
-                rectTransform.anchorMax = Vector2.one;
-                rectTransform.sizeDelta = Vector2.zero;
+                var rect = textObj.AddComponent<RectTransform>();
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = Vector2.one;
+                rect.sizeDelta = Vector2.zero;
             }
             else
             {
-                textObj = textTransform.gameObject;
+                textObj = textTrans.gameObject;
             }
 
-            // Configure TextMeshPro
             var tmp = textObj.GetComponent<TextMeshProUGUI>();
-            if (tmp == null)
-            {
-                tmp = textObj.AddComponent<TextMeshProUGUI>();
-            }
+            if (tmp == null) tmp = textObj.AddComponent<TextMeshProUGUI>();
+
             tmp.text = text;
             tmp.color = TextColor;
             tmp.fontSize = FontSize;
             tmp.alignment = TextAlignmentOptions.Center;
             tmp.enableAutoSizing = false;
 
-            // Find and set font
             if (tmp.font == null)
             {
-                var fonts = Resources.FindObjectsOfTypeAll<TMP_FontAsset>();
-                var font = fonts.FirstOrDefault(x => x.name.Equals(FontName))
-                        ?? fonts.FirstOrDefault(x => x.name.Contains("Bender"));
-                if (font != null)
-                {
-                    tmp.font = font;
-                }
+                var allFonts = Resources.FindObjectsOfTypeAll<TMP_FontAsset>();
+                var font = allFonts.FirstOrDefault(x => x.name.Equals(FontName));
+                if (font == null) font = allFonts.FirstOrDefault(x => x.name.Contains("Bender"));
+                if (font != null) tmp.font = font;
             }
 
             textObj.SetActive(true);
@@ -205,31 +188,23 @@ namespace ChouUn.Iof.UI
         private static void AddTooltip(GameObject go, string message)
         {
             var trigger = go.GetComponent<EventTrigger>();
-            if (trigger == null)
-            {
-                trigger = go.AddComponent<EventTrigger>();
-            }
+            if (trigger == null) trigger = go.AddComponent<EventTrigger>();
 
-            // Pointer Enter - show tooltip
-            var enterEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
-            enterEntry.callback.AddListener(_ =>
-            {
-                ItemUiContext.Instance.Tooltip.Show(message, null, 0f, null);
+            var entryEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+            entryEnter.callback.AddListener((data) => {
+                ItemUiContext.Instance.Tooltip.Show(message);
             });
-            trigger.triggers.Add(enterEntry);
+            trigger.triggers.Add(entryEnter);
 
-            // Pointer Exit - hide tooltip
-            var exitEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
-            exitEntry.callback.AddListener(_ =>
-            {
+            var entryExit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+            entryExit.callback.AddListener((data) => {
                 ItemUiContext.Instance.Tooltip.Close();
             });
-            trigger.triggers.Add(exitEntry);
+            trigger.triggers.Add(entryExit);
         }
 
         private static void DoNothing()
         {
-            // Empty method used to close message window
         }
     }
 }
