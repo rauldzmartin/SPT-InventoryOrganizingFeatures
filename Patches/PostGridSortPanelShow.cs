@@ -79,6 +79,14 @@ namespace ChouUn.Iof.Patches
             var takeoutbtn = SetupTakeOutButton(____button, item, controller);
             takeoutbtn.transform.parent.GetChild(orgbtn.transform.parent.childCount - 2).SetAsLastSibling();
 
+            // Fix original Sort button width to match new buttons
+            var layoutElement = ____button.GetComponent<UnityEngine.UI.LayoutElement>();
+            if (layoutElement == null)
+            {
+                layoutElement = ____button.gameObject.AddComponent<UnityEngine.UI.LayoutElement>();
+            }
+            layoutElement.minWidth = 33f;
+            layoutElement.flexibleWidth = 0f;
         }
     }
 }
